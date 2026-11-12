@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1-dars: Tovush qanday tarqaladi · Akustik kamera</title>
+<meta name="description" content="Akustik kamera darslarining jonli modeli">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<div class="wrap">
+<div class="top"><a href="/">← Barcha darslar</a><span class="note">Akustik kamera darslari</span></div>
+<section id="dars-1">
+  <div class="eyebrow">1-dars</div>
+  <h2>Tovush qanday tarqaladi</h2>
+  <p class="lead">To‘q sariq yoylar — havo siqilgan joylar. Chastotani oshirsangiz, yoylar zichlashadi, lekin tezligi o‘zgarmaydi.</p>
+  <div class="formula">λ = c ÷ f</div>
+  <div class="lab" id="lab1">
+    <div class="controls">
+      <label for="f1">Chastota</label><input type="range" id="f1" min="1" max="10" step="0.5" value="2"><output id="f1o">2 kHz</output>
+    </div>
+    <canvas id="c1" width="640" height="300" aria-label="Manbadan tarqalayotgan tovush yoylari va mikrofondagi bosim grafigi"></canvas>
+    <div class="stats">
+      <div class="stat"><span>Tezlik (o‘zgarmaydi)</span><b>343 m/s</b></div>
+      <div class="stat"><span>Sekundiga tebranish</span><b id="s1a">-</b></div>
+      <div class="stat"><span>To‘lqin uzunligi λ</span><b id="s1b">-</b></div>
+    </div>
+    <button id="p1" type="button">To‘xtatish</button>
+    <p class="note">Harakat millionlab marta sekinlashtirilgan. Masshtab: 1 sm = 6 piksel.</p>
+  </div>
+</section>
+<div class="pager"><span></span><a href="/dars-2/">2-dars →</a></div>
+</div>
+<script>
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const GRAY='#8C8A82';
+const $=id=>document.getElementById(id);
+
+
+(()=>{const cv=$('c1'),g=cv.getContext('2d'),W=640,H=300,sx=50,sy=120,mx=470,my=120,Rm=mx-sx;let ph=0,run=!reduce,trace=[];
+$('p1').textContent=run?'To‘xtatish':'Davom ettirish';
+$('p1').onclick=()=>{run=!run;$('p1').textContent=run?'To‘xtatish':'Davom ettirish';};
+$('f1').oninput=()=>{trace=[];};
+function frame(){const f=+$('f1').value,lp=34300/(f*1000)*6;
+$('f1o').textContent=f+' kHz';$('s1a').textContent=(f*1000).toLocaleString('ru-RU')+' marta';$('s1b').textContent=(34.3/f).toFixed(1).replace('.',',')+' sm';
+if(run)ph+=1.6/lp;g.clearRect(0,0,W,H);
+for(let k=Math.floor(ph);k>=0;k--){const r=(ph-k)*lp;if(r>W)break;g.strokeStyle='rgba(216,90,48,'+Math.max(0.12,1-r/W)+')';g.lineWidth=3;g.beginPath();g.arc(sx,sy,r,-1.2,1.2);g.stroke();}
+g.fillStyle='#D85A30';g.beginPath();g.arc(sx,sy,9,0,7);g.fill();g.fillStyle=GRAY;g.font='12px Inter, sans-serif';g.fillText('Manba',sx-22,sy+30);
+const p=ph*lp>Rm?Math.cos(2*Math.PI*(ph-Rm/lp)):0,hit=p>0.92;g.fillStyle=hit?'#5DCAA5':'#1D9E75';g.beginPath();g.arc(mx,my,hit?12:9,0,7);g.fill();g.fillStyle=GRAY;g.fillText('Mikrofon',mx-24,my+30);
+const k0=Math.floor(ph-Rm/lp),r1=(ph-k0)*lp,r2=(ph-k0-1)*lp;
+if(r2>40&&r1<W){const y=8;g.strokeStyle=GRAY;g.lineWidth=1.2;g.beginPath();g.moveTo(sx+r2,y+6);g.lineTo(sx+r1,y+6);g.moveTo(sx+r2,y);g.lineTo(sx+r2,y+12);g.moveTo(sx+r1,y);g.lineTo(sx+r1,y+12);g.stroke();g.fillStyle=GRAY;g.fillText('λ',sx+(r1+r2)/2-3,y+26);}
+if(run){trace.push(p);if(trace.length>240)trace.shift();}
+const tx=120,ty=255,tw=500;g.strokeStyle='rgba(140,138,130,0.35)';g.lineWidth=1;g.beginPath();g.moveTo(tx,ty);g.lineTo(tx+tw,ty);g.stroke();
+g.fillStyle=GRAY;g.fillText('Mikrofondagi',10,ty-4);g.fillText('bosim',10,ty+12);
+g.strokeStyle='#1D9E75';g.lineWidth=2;g.beginPath();trace.forEach((v,i)=>{const x=tx+i/240*tw,y=ty-v*28;i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();g.fillText('vaqt →',tx+tw-40,ty+40);
+requestAnimationFrame(frame);}frame();})();
+
+</script>
+</body>
+</html>
