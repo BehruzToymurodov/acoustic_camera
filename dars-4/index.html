@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>4-dars: Vaqt farqini qanday o‘lchaymiz · Akustik kamera</title>
+<meta name="description" content="Akustik kamera darslarining jonli modeli">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<style>.btns{display:flex;gap:8px;flex-wrap:wrap}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="top"><a href="/">← Barcha darslar</a><span class="note">Akustik kamera darslari</span></div>
+<section id="dars-4">
+  <div class="eyebrow">4-dars</div>
+  <h2>Vaqt farqini qanday o‘lchaymiz</h2>
+  <p class="lead">B signalini siljiting va A bilan qachon eng yaxshi mos tushishini toping. Har bir siljishda nuqtalar ko‘paytirilib qo‘shiladi — bu o‘xshashlik R[k]. Eng katta R bergan siljish — kechikish.</p>
+  <div class="formula">R[k] = Σ A[n] · B[n+k] &nbsp;·&nbsp; Δt = k ÷ fs</div>
+  <div class="lab" id="lab4">
+    <div class="controls">
+      <label for="k4">B ni siljitish k</label><input type="range" id="k4" min="-15" max="15" step="1" value="0"><output id="k4o">0 namuna</output>
+      <label for="nz4">Shovqin</label><input type="range" id="nz4" min="0" max="1" step="0.05" value="0.3"><output id="nz4o">30%</output>
+    </div>
+    <div class="btns">
+      <button id="new4" type="button">Yangi tovush</button>
+      <button id="tp4" type="button">Turi: shitirlash</button>
+      <button id="auto4" type="button">Avtomatik topish ↻</button>
+    </div>
+    <canvas id="c4" width="640" height="440" aria-label="A va siljitilgan B signallari, ularning ko'paytmasi va har bir siljish uchun o'xshashlik grafigi"></canvas>
+    <div class="stats">
+      <div class="stat"><span>Hozirgi o‘xshashlik R[k]</span><b id="s4a">-</b></div>
+      <div class="stat"><span>Eng yaxshi k</span><b id="s4b">-</b></div>
+      <div class="stat"><span>Δt (48 kHz da)</span><b id="s4c">-</b></div>
+      <div class="stat"><span>Burchak θ (d = 4,2 sm)</span><b id="s4d">-</b></div>
+    </div>
+    <p class="note">Haqiqiy kechikish yashirin — uni o‘xshashlik grafigining cho‘qqisidan toping. 4,2 sm massivda kechikish ±5,88 namunadan oshmaydi (3-dars), shuning uchun haqiqiy cho‘qqi doim −5…+5 oralig‘ida. “Hushtak” turida bir nechta deyarli teng cho‘qqi paydo bo‘lishiga e’tibor bering.</p>
+  </div>
+</section>
+<div class="pager"><a href="/dars-3/">← 3-dars</a><span></span></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+(()=>{const N=150,KM=15,cv=$('c4'),g=cv.getContext('2d'),W=640,GRAY='#8C8A82';let A=[],B=[],R=[],tone=false,anim=null;
+const rn=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);};
+function newSig(){$('tp4').textContent=tone?'Turi: hushtak (bitta ton)':'Turi: shitirlash';const D=(Math.random()<0.5?-1:1)*(1+Math.floor(Math.random()*5));
+const s=[];for(let n=0;n<N+20;n++){const gw=Math.exp(-Math.pow((n-70)/(tone?28:13),2));s.push(tone?Math.sin(2*Math.PI*n/7)*gw:rn()*gw);}
+const nz=+$('nz4').value;A=[];B=[];for(let n=0;n<N;n++){A.push(s[n]+nz*0.35*rn());B.push((n-D>=0&&n-D<s.length?s[n-D]:0)+nz*0.35*rn());}
+R=[];for(let k=-KM;k<=KM;k++){let r=0;for(let n=0;n<N;n++){const m=n+k;if(m>=0&&m<N)r+=A[n]*B[m];}R.push(r);}draw();}
+function draw(){const k=+$('k4').value;$('k4o').textContent=k+' namuna';$('nz4o').textContent=Math.round(+$('nz4').value*100)+'%';
+g.clearRect(0,0,W,440);const L=40,X=n=>L+n/(N-1)*(W-L-10);g.font='12px Inter, sans-serif';
+let mx=0;A.concat(B).forEach(v=>mx=Math.max(mx,Math.abs(v)));const sc=38/mx;
+g.fillStyle=GRAY;g.fillText('A va siljitilgan B',L,14);
+const y1=70;g.strokeStyle='rgba(140,138,130,0.3)';g.lineWidth=1;g.beginPath();g.moveTo(L,y1);g.lineTo(W-10,y1);g.stroke();
+g.lineWidth=2;g.strokeStyle='#1D9E75';g.beginPath();A.forEach((v,n)=>{n?g.lineTo(X(n),y1-v*sc):g.moveTo(X(n),y1-v*sc);});g.stroke();
+g.strokeStyle='#D85A30';g.beginPath();let st=false;for(let n=0;n<N;n++){const m=n+k;if(m<0||m>=N)continue;const y=y1-B[m]*sc;st?g.lineTo(X(n),y):g.moveTo(X(n),y);st=true;}g.stroke();
+g.fillStyle='#1D9E75';g.fillText('A',8,y1-4);g.fillStyle='#D85A30';g.fillText('B',8,y1+14);
+const y2=175;g.fillStyle=GRAY;g.fillText('Ko‘paytma A × B (yashil = musbat, to‘q sariq = manfiy)',L,128);
+g.strokeStyle='rgba(140,138,130,0.3)';g.lineWidth=1;g.beginPath();g.moveTo(L,y2);g.lineTo(W-10,y2);g.stroke();
+const bw=(W-L-10)/N;for(let n=0;n<N;n++){const m=n+k;if(m<0||m>=N)continue;const p=A[n]*B[m]*sc*sc/40;g.fillStyle=p>=0?'#1D9E75':'#D85A30';g.fillRect(X(n)-bw/2,p>=0?y2-p:y2,Math.max(1,bw-0.5),Math.abs(p));}
+const top=250,bot=420,rmax=Math.max(...R.map(Math.abs)),KX=kk=>L+(kk+KM)/(2*KM)*(W-L-10),RY=r=>bot-(r/rmax+1)/2*(bot-top);
+g.fillStyle=GRAY;g.fillText('O‘xshashlik R[k] — har bir siljish uchun ko‘paytmalar yig‘indisi',L,top-14);
+g.strokeStyle='rgba(140,138,130,0.3)';g.beginPath();g.moveTo(L,RY(0));g.lineTo(W-10,RY(0));g.stroke();
+for(let kk=-KM;kk<=KM;kk+=5){g.fillStyle=GRAY;g.fillText(String(kk),KX(kk)-6,bot+14);}
+let best=0;R.forEach((r,i)=>{if(r>R[best])best=i;});
+g.strokeStyle='#7F77DD';g.lineWidth=2;g.beginPath();R.forEach((r,i)=>{const x=KX(i-KM),y=RY(r);i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();
+R.forEach((r,i)=>{g.fillStyle='#7F77DD';g.beginPath();g.arc(KX(i-KM),RY(r),2.5,0,7);g.fill();});
+g.strokeStyle='#D85A30';g.setLineDash([4,4]);g.beginPath();g.moveTo(KX(k),top);g.lineTo(KX(k),bot);g.stroke();g.setLineDash([]);
+g.fillStyle='#D85A30';g.beginPath();g.arc(KX(k),RY(R[k+KM]),6,0,7);g.fill();
+const kb=best-KM;g.strokeStyle='#1D9E75';g.lineWidth=2;g.beginPath();g.arc(KX(kb),RY(R[best]),9,0,7);g.stroke();
+$('s4a').textContent=(R[k+KM]/rmax*100).toFixed(0)+'%';$('s4b').textContent=kb+' namuna';
+const dt=kb/48000;$('s4c').textContent=(dt*1e6).toFixed(1).replace('.',',')+' µs';const s=dt*343/0.042;
+$('s4d').textContent=Math.abs(s)<=1?(Math.asin(s)*180/Math.PI).toFixed(1).replace('.',',')+'°':'imkonsiz';}
+function autoFind(){if(anim)clearInterval(anim);let k=-KM;const el=$('k4');anim=setInterval(()=>{el.value=k;draw();k++;if(k>KM){clearInterval(anim);anim=null;let b=0;R.forEach((r,i)=>{if(r>R[b])b=i;});el.value=b-KM;draw();}},90);}
+$('k4').addEventListener('input',draw);$('nz4').addEventListener('input',newSig);
+$('new4').onclick=newSig;$('tp4').onclick=()=>{tone=!tone;newSig();};$('auto4').onclick=autoFind;
+newSig();})();
+</script>
+</body>
+</html>
